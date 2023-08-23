@@ -1,12 +1,50 @@
 mod ast;
 mod token;
 mod lexer;
+mod eval;
 
+use std::io::{self, Write};
 use lalrpop_util::lalrpop_mod;
+
 lalrpop_mod!(pub syntax);
 
-fn main() {
-    println!("Hello, world!");
+fn main() -> io::Result<()> {
+    let mut buffer = String::new();
+    let stdin = io::stdin();
+
+    loop {
+        print!("expr> ");
+        io::stdout().flush()?;
+
+        buffer.clear();
+        let n = stdin.read_line(&mut buffer)?;
+        if n == 0 {
+            return Ok(());
+        }
+
+        let lexer = lexer::Lexer::new(&buffer);
+        let parser = syntax::ProgramParser::new();
+        let expr = match parser.parse(lexer) {
+            Ok(expr) => expr,
+            Err(e) => {
+                println!("ParseError: {e}");
+                println!();
+                continue;
+            }
+        };
+
+        let env = eval::Environment::new();
+        let value = match eval::eval(&env, &expr) {
+            Ok(value) => value,
+            Err(e) => {
+                println!("EvalError: {e}");
+                println!();
+                continue;
+            }
+        };
+        println!("=> {value}");
+        println!();
+    }
 }
 
 #[test]

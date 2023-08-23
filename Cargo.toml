@@ -9,6 +9,7 @@ edition = "2021"
 lalrpop = "0.20.0"
 
 [dependencies]
+im = "15.1.0"
 lalrpop-util = "0.20.0"
 regex = "1"
 thiserror = "1"
