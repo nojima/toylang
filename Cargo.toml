@@ -1,0 +1,15 @@
+[package]
+name = "toylang"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+lalrpop = "0.20.0"
+
+[dependencies]
+lalrpop-util = "0.20.0"
+regex = "1"
+thiserror = "1"
+

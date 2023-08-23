@@ -1,0 +1,68 @@
+use crate::ast::{Expr, UnaryOp, BinaryOp};
+use crate::token::Token;
+use crate::lexer::LexicalError;
+
+grammar;
+
+pub Program: Expr =
+    Expr;
+
+Expr: Expr = {
+    Expr3,
+    LetExpr,
+}
+
+LetExpr: Expr =
+    "let" <name:Identifier> "=" <expr1:Expr> "in" <expr2:Expr>
+        => Expr::Let(name, Box::new(expr1), Box::new(expr2));
+
+Expr3: Expr = {
+    Expr2,
+    <lhs:Expr3> "+" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Add, Box::new(lhs), Box::new(rhs)),
+    <lhs:Expr3> "-" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Sub, Box::new(lhs), Box::new(rhs)),
+};
+
+Expr2: Expr = {
+    Expr1,
+    <lhs:Expr2> "*" <rhs:Expr1> => Expr::BinaryOp(BinaryOp::Mul, Box::new(lhs), Box::new(rhs)),
+    <lhs:Expr2> "/" <rhs:Expr1> => Expr::BinaryOp(BinaryOp::Div, Box::new(lhs), Box::new(rhs)),
+};
+
+Expr1: Expr = {
+    Expr0,
+    "-" <Expr0> => Expr::UnaryOp(UnaryOp::Neg, Box::new(<>)),
+}
+
+Expr0: Expr = {
+    Number     => Expr::Number(<>),
+    Identifier => Expr::Variable(<>),
+    "(" <Expr> ")",
+};
+
+Number: f64 =
+    "number literal";
+
+Identifier: String =
+    "identifier";
+
+extern {
+    type Location = usize;
+    type Error = LexicalError;
+
+    enum Token {
+        ";" => Token::Semicolon,
+        "=" => Token::Equal,
+        "+" => Token::Plus,
+        "-" => Token::Minus,
+        "*" => Token::Asterisk,
+        "/" => Token::Slash,
+        "(" => Token::LParen,
+        ")" => Token::RParen,
+
+        "let" => Token::Let,
+        "in" => Token::In,
+
+        "number literal" => Token::Number(<f64>),
+        "identifier" => Token::Identifier(<String>),
+    }
+}
