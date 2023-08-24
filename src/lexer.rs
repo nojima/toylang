@@ -1,12 +1,18 @@
+use crate::token::Token;
+use regex::Regex;
 use std::str::FromStr;
 use std::sync::OnceLock;
-use regex::Regex;
-use crate::token::Token;
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum LexicalError {
     #[error("unexpected character: '{0}'")]
     UnexpectedCharacter(char),
+
+    #[error("unexpected end of file")]
+    UnexpectedEndOfFile,
+
+    #[error("undefined escape: '\\{0}'")]
+    UndefinedEscape(char),
 }
 
 // Success: Ok(Some((token, bytes_consumed)))
@@ -72,7 +78,41 @@ fn lex(input: &str) -> LexResult {
         return ok(Token::Number(n), m.end());
     }
 
+    if input.starts_with('"') {
+        return lex_string_literal(input);
+    }
+
     err(LexicalError::UnexpectedCharacter(first))
+}
+
+fn lex_string_literal(input: &str) -> LexResult {
+    let mut chars = input.chars();
+    assert_eq!(chars.next(), Some('"'));
+
+    let mut buffer = String::new();
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => {
+                let Some(c2) = chars.next() else {
+                    return Err(LexicalError::UnexpectedEndOfFile);
+                };
+                match c2 {
+                    '"' => buffer.push('"'),
+                    '\\' => buffer.push('\\'),
+                    '/' => buffer.push('/'),
+                    'n' => buffer.push('\n'),
+                    'r' => buffer.push('\r'),
+                    't' => buffer.push('\t'),
+                    _ => return Err(LexicalError::UndefinedEscape(c2)),
+                }
+            }
+            '"' => break,
+            _ => buffer.push(c),
+        }
+    }
+
+    let bytes_consumed = input.len() - chars.as_str().len();
+    ok(Token::String(buffer), bytes_consumed)
 }
 
 // Same as `lex` except that it ignores leading whitespaces.

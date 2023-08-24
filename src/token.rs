@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -15,6 +15,7 @@ pub enum Token {
     In,
 
     Number(f64),
+    String(String),
     Identifier(String),
 }
 

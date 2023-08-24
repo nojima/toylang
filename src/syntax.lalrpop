@@ -35,12 +35,16 @@ Expr1: Expr = {
 
 Expr0: Expr = {
     Number     => Expr::Number(<>),
+    String     => Expr::String(<>),
     Identifier => Expr::Variable(<>),
     "(" <Expr> ")",
 };
 
 Number: f64 =
     "number literal";
+
+String: String =
+    "string literal";
 
 Identifier: String =
     "identifier";
@@ -63,6 +67,7 @@ extern {
         "in" => Token::In,
 
         "number literal" => Token::Number(<f64>),
+        "string literal" => Token::String(<String>),
         "identifier" => Token::Identifier(<String>),
     }
 }

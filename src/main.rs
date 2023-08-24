@@ -1,10 +1,11 @@
 mod ast;
-mod token;
-mod lexer;
 mod eval;
+mod lexer;
+mod token;
+mod value;
 
-use std::io::{self, Write};
 use lalrpop_util::lalrpop_mod;
+use std::io::{self, Write};
 
 lalrpop_mod!(pub syntax);
 
@@ -42,7 +43,7 @@ fn main() -> io::Result<()> {
                 continue;
             }
         };
-        println!("=> {value}");
+        println!("=> {value:?}");
         println!();
     }
 }

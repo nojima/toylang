@@ -1,8 +1,9 @@
-use std::fmt::{Debug, Formatter, self};
+use std::fmt::{self, Debug, Formatter};
 
 #[derive(Clone)]
 pub enum Expr {
     Number(f64),
+    String(String),
     UnaryOp(UnaryOp, Box<Expr>),
     BinaryOp(BinaryOp, Box<Expr>, Box<Expr>),
     Variable(String),
@@ -13,10 +14,11 @@ impl Debug for Expr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Expr::Number(n) => write!(f, "{n:?}"),
+            Expr::String(s) => write!(f, "{s:?}"),
             Expr::UnaryOp(op, expr) => write!(f, "{op:?}{expr:?}"),
             Expr::BinaryOp(op, lhs, rhs) => write!(f, "({lhs:?} {op:?} {rhs:?})"),
             Expr::Variable(ref name) => write!(f, "{name}"),
-            Expr::Let(name, expr1, expr2) => write!(f, "(let {name} = {expr1:?} in {expr2:?})")
+            Expr::Let(name, expr1, expr2) => write!(f, "(let {name} = {expr1:?} in {expr2:?})"),
         }
     }
 }
@@ -36,7 +38,10 @@ impl Debug for UnaryOp {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum BinaryOp {
-    Add, Sub, Mul, Div,
+    Add,
+    Sub,
+    Mul,
+    Div,
 }
 
 impl Debug for BinaryOp {
