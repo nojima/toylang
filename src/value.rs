@@ -6,6 +6,7 @@ use std::sync::Arc;
 pub enum Value {
     Unit,
     Number(f64),
+    Bool(bool),
     String(Arc<CompactString>),
     Function(CompactString, Vec<CompactString>, Box<Expr>),
 }

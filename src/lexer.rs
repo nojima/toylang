@@ -47,13 +47,19 @@ fn lex(input: &str) -> LexResult {
     match first {
         ';' => return ok(Token::Semicolon, 1),
         ',' => return ok(Token::Comma, 1),
-        '=' => return ok(Token::Equal, 1),
         '+' => return ok(Token::Plus, 1),
         '-' => return ok(Token::Minus, 1),
         '*' => return ok(Token::Asterisk, 1),
         '/' => return ok(Token::Slash, 1),
         '(' => return ok(Token::LParen, 1),
         ')' => return ok(Token::RParen, 1),
+        '=' => {
+            return if second(input) == Some('=') {
+                ok(Token::EqEq, 2)
+            } else {
+                ok(Token::Equal, 1)
+            };
+        }
         _ => {}
     }
 
@@ -61,6 +67,9 @@ fn lex(input: &str) -> LexResult {
     if let Some(m) = re_identifier_or_reserved.find(input) {
         let s = m.as_str();
         let token = match s {
+            "if" => Token::If,
+            "then" => Token::Then,
+            "else" => Token::Else,
             "def" => Token::Def,
             "let" => Token::Let,
             "in" => Token::In,
@@ -130,6 +139,13 @@ fn lex_strip(input: &str) -> LexResult {
             }
         }
     }
+}
+
+// Returns the second character of `input`.
+fn second(input: &str) -> Option<char> {
+    let mut chars = input.chars();
+    chars.next();
+    chars.next()
 }
 
 pub struct Lexer<'input> {

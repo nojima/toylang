@@ -36,8 +36,19 @@ LetStmt: Stmt =
     "let" <name:Identifier> "=" <expr:Expr> ";"
         => Stmt::Let(name, expr);
 
-pub Expr: Expr =
-    Expr4;
+pub Expr: Expr = {
+    Expr5,
+    IfExpr,
+}
+
+IfExpr: Expr =
+    "if" <cond_expr:Expr> "then" <then_expr:Expr> "else" <else_expr:Expr>
+        => Expr::If(Box::new(cond_expr), Box::new(then_expr), Box::new(else_expr));
+
+Expr5: Expr = {
+    Expr4,
+    <lhs:Expr4> "==" <rhs:Expr4> => Expr::BinaryOp(BinaryOp::Eq, Box::new(lhs), Box::new(rhs)),
+}
 
 Expr4: Expr = {
     Expr3,
@@ -88,14 +99,18 @@ extern {
     enum Token {
         ";" => Token::Semicolon,
         "," => Token::Comma,
-        "=" => Token::Equal,
         "+" => Token::Plus,
         "-" => Token::Minus,
         "*" => Token::Asterisk,
         "/" => Token::Slash,
         "(" => Token::LParen,
         ")" => Token::RParen,
+        "=" => Token::Equal,
+        "==" => Token::EqEq,
 
+        "if" => Token::If,
+        "then" => Token::Then,
+        "else" => Token::Else,
         "def" => Token::Def,
         "let" => Token::Let,
         "in" => Token::In,

@@ -6,6 +6,7 @@ pub enum Token {
     Semicolon,
     Comma,
     Equal,
+    EqEq,
     Plus,
     Minus,
     Asterisk,
@@ -13,6 +14,9 @@ pub enum Token {
     LParen,
     RParen,
 
+    If,
+    Then,
+    Else,
     Def,
     Let,
     In,

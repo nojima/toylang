@@ -38,6 +38,7 @@ pub enum Expr {
     BinaryOp(BinaryOp, Box<Expr>, Box<Expr>),
     Variable(CompactString),
     Apply(Box<Expr>, Vec<Expr>),
+    If(Box<Expr>, Box<Expr>, Box<Expr>),
 }
 
 impl Debug for Expr {
@@ -49,6 +50,9 @@ impl Debug for Expr {
             Expr::BinaryOp(op, lhs, rhs) => write!(f, "({lhs:?} {op:?} {rhs:?})"),
             Expr::Variable(ref name) => write!(f, "{name}"),
             Expr::Apply(func, args) => write!(f, "{func:?}{args:?}"),
+            Expr::If(cond, then_expr, else_expr) => {
+                write!(f, "if {cond:?} then {then_expr:?} else {else_expr:?}")
+            }
         }
     }
 }
@@ -72,6 +76,7 @@ pub enum BinaryOp {
     Sub,
     Mul,
     Div,
+    Eq,
 }
 
 impl Debug for BinaryOp {
@@ -81,6 +86,7 @@ impl Debug for BinaryOp {
             BinaryOp::Sub => write!(f, "-"),
             BinaryOp::Mul => write!(f, "*"),
             BinaryOp::Div => write!(f, "/"),
+            BinaryOp::Eq => write!(f, "=="),
         }
     }
 }

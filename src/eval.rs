@@ -16,6 +16,9 @@ pub enum EvalError {
 
     #[error("wrong number of arguments")]
     WrongNumberOfArguments,
+
+    #[error("condition expression of `if` must be a bool")]
+    ConditionExpressionMustBeBool,
 }
 
 #[derive(Debug, Clone)]
@@ -93,6 +96,7 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
                 BinaryOp::Sub => op_sub(l, r),
                 BinaryOp::Mul => op_mul(l, r),
                 BinaryOp::Div => op_div(l, r),
+                BinaryOp::Eq => op_eq(l, r),
             }
         }
         Expr::Variable(name) => match env.variables.get(name) {
@@ -100,6 +104,7 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             None => Err(EvalError::UndefinedVariable(name.to_owned())),
         },
         Expr::Apply(func, args) => eval_apply(env, func, args),
+        Expr::If(cond, then, else_) => eval_if(env, cond, then, else_),
     }
 }
 
@@ -139,6 +144,16 @@ fn op_div(l: Value, r: Value) -> Result<Value, EvalError> {
     }
 }
 
+fn op_eq(l: Value, r: Value) -> Result<Value, EvalError> {
+    match (l, r) {
+        (Value::Unit, Value::Unit) => Ok(Value::Bool(true)),
+        (Value::Number(l), Value::Number(r)) => Ok(Value::Bool(l == r)),
+        (Value::Bool(l), Value::Bool(r)) => Ok(Value::Bool(l == r)),
+        (Value::String(l), Value::String(r)) => Ok(Value::Bool(l == r)),
+        _ => Err(EvalError::BadOperandType),
+    }
+}
+
 fn eval_apply(env: &Environment, func: &Expr, args: &[Expr]) -> Result<Value, EvalError> {
     let Value::Function(_name, params, body) = eval_expr(env, func)? else {
         return Err(EvalError::UncallableObject);
@@ -152,4 +167,16 @@ fn eval_apply(env: &Environment, func: &Expr, args: &[Expr]) -> Result<Value, Ev
         new_env = new_env.with_variable(param, value);
     }
     eval_expr(&new_env, &body)
+}
+
+fn eval_if(env: &Environment, cond: &Expr, then: &Expr, else_: &Expr) -> Result<Value, EvalError> {
+    let cond_value = match eval_expr(env, cond)? {
+        Value::Bool(b) => b,
+        _ => return Err(EvalError::ConditionExpressionMustBeBool),
+    };
+    if cond_value {
+        eval_expr(env, then)
+    } else {
+        eval_expr(env, else_)
+    }
 }
