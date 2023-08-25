@@ -4,12 +4,40 @@ mod lexer;
 mod token;
 mod value;
 
+use clap::Parser;
 use lalrpop_util::lalrpop_mod;
-use std::io::{self, Write};
+use std::{
+    io::{self, Write},
+    path::{Path, PathBuf},
+};
 
 lalrpop_mod!(pub syntax);
 
-fn main() -> io::Result<()> {
+#[derive(Parser, Debug)]
+struct Cli {
+    filename: Option<PathBuf>,
+}
+
+fn main() -> anyhow::Result<()> {
+    let cli = Cli::parse();
+    match cli.filename {
+        Some(filename) => execute_file(&filename),
+        None => repl(),
+    }
+}
+
+fn execute_file(filename: &Path) -> anyhow::Result<()> {
+    let source_code = std::fs::read_to_string(filename)?;
+    let lexer = lexer::Lexer::new(&source_code);
+    let parser = syntax::ProgramParser::new();
+    let node = parser.parse(lexer)?;
+    let env = eval::Environment::new();
+    let (value, _) = eval::eval_program(&env, &node)?;
+    println!("{value:?}");
+    Ok(())
+}
+
+fn repl() -> anyhow::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
     let mut env = eval::Environment::new();
@@ -26,8 +54,8 @@ fn main() -> io::Result<()> {
 
         let lexer = lexer::Lexer::new(&buffer);
         let parser = syntax::ProgramParser::new();
-        let expr = match parser.parse(lexer) {
-            Ok(expr) => expr,
+        let node = match parser.parse(lexer) {
+            Ok(node) => node,
             Err(e) => {
                 println!("ParseError: {e}");
                 println!();
@@ -35,7 +63,7 @@ fn main() -> io::Result<()> {
             }
         };
 
-        let (value, new_env) = match eval::eval_program(&env, &expr) {
+        let (value, new_env) = match eval::eval_program(&env, &node) {
             Ok(value) => value,
             Err(e) => {
                 println!("EvalError: {e}");
