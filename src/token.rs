@@ -4,6 +4,7 @@ use std::fmt::{self, Display, Formatter};
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Semicolon,
+    Comma,
     Equal,
     Plus,
     Minus,
@@ -12,6 +13,7 @@ pub enum Token {
     LParen,
     RParen,
 
+    Def,
     Let,
     In,
 

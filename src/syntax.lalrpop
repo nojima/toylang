@@ -5,11 +5,28 @@ use crate::lexer::LexicalError;
 
 grammar;
 
+//--------------------------------------------------------
+
+CommaSeparated<T>: Vec<T> = {
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        }
+    }
+};
+
+//--------------------------------------------------------
+
 pub Program: Vec<Stmt> =
     Stmt+;
 
-Stmt: Stmt =
-    <Expr> ";" => Stmt::Expr(<>);
+Stmt: Stmt = {
+    <Expr> ";" => Stmt::Expr(<>),
+    "def" <name:Identifier> "(" <args:CommaSeparated<Identifier>> ")" "=" <body:Expr> ";"
+        => Stmt::Def(name, args, body),
+};
 
 pub Expr: Expr = {
     Expr3,
@@ -59,6 +76,7 @@ extern {
 
     enum Token {
         ";" => Token::Semicolon,
+        "," => Token::Comma,
         "=" => Token::Equal,
         "+" => Token::Plus,
         "-" => Token::Minus,
@@ -67,6 +85,7 @@ extern {
         "(" => Token::LParen,
         ")" => Token::RParen,
 
+        "def" => Token::Def,
         "let" => Token::Let,
         "in" => Token::In,
 

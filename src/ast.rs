@@ -4,12 +4,26 @@ use std::fmt::{self, Debug, Formatter};
 #[derive(Clone)]
 pub enum Stmt {
     Expr(Expr),
+    Def(CompactString, Vec<CompactString>, Expr),
 }
 
 impl Debug for Stmt {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
             Stmt::Expr(expr) => writeln!(f, "{expr:?};"),
+            Stmt::Def(name, args, body) => {
+                write!(f, "def {name}(")?;
+                let mut first = true;
+                for arg in args {
+                    if first {
+                        first = false;
+                    } else {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{arg}")?;
+                }
+                writeln!(f, ") = {body:?}")
+            }
         }
     }
 }

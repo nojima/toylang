@@ -48,6 +48,11 @@ pub fn eval_stmt(env: &Environment, stmt: &Stmt) -> Result<(Value, Environment),
             let value = eval_expr(env, &expr)?;
             Ok((value, env.clone()))
         }
+        Stmt::Def(name, args, body) => {
+            let func = Value::Function(name.clone(), args.clone(), Box::new(body.clone()));
+            let new_env = env.with_variable(name.clone(), func);
+            Ok((Value::Unit, new_env))
+        }
     }
 }
 

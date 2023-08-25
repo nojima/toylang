@@ -46,6 +46,7 @@ fn lex(input: &str) -> LexResult {
     };
     match first {
         ';' => return ok(Token::Semicolon, 1),
+        ',' => return ok(Token::Comma, 1),
         '=' => return ok(Token::Equal, 1),
         '+' => return ok(Token::Plus, 1),
         '-' => return ok(Token::Minus, 1),
@@ -60,6 +61,7 @@ fn lex(input: &str) -> LexResult {
     if let Some(m) = re_identifier_or_reserved.find(input) {
         let s = m.as_str();
         let token = match s {
+            "def" => Token::Def,
             "let" => Token::Let,
             "in" => Token::In,
             _ => Token::Identifier(s.into()),
