@@ -1,4 +1,5 @@
 use std::fmt::{self, Display, Formatter};
+use compact_str::CompactString;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -15,8 +16,8 @@ pub enum Token {
     In,
 
     Number(f64),
-    String(String),
-    Identifier(String),
+    String(CompactString),
+    Identifier(CompactString),
 }
 
 impl Display for Token {

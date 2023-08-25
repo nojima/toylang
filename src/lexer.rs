@@ -62,7 +62,7 @@ fn lex(input: &str) -> LexResult {
         let token = match s {
             "let" => Token::Let,
             "in" => Token::In,
-            _ => Token::Identifier(s.to_owned()),
+            _ => Token::Identifier(s.into()),
         };
         return ok(token, m.end());
     }
@@ -112,7 +112,7 @@ fn lex_string_literal(input: &str) -> LexResult {
     }
 
     let bytes_consumed = input.len() - chars.as_str().len();
-    ok(Token::String(buffer), bytes_consumed)
+    ok(Token::String(buffer.into()), bytes_consumed)
 }
 
 // Same as `lex` except that it ignores leading whitespaces.

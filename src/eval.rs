@@ -1,11 +1,12 @@
 use crate::ast::{BinaryOp, Expr, UnaryOp, Stmt};
 use crate::value::Value;
+use compact_str::CompactString;
 use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum EvalError {
     #[error("undefined variable: {0}")]
-    UndefinedVariable(String),
+    UndefinedVariable(CompactString),
 
     #[error("bad operand type")]
     BadOperandType,
@@ -13,7 +14,7 @@ pub enum EvalError {
 
 #[derive(Debug, Clone)]
 pub struct Environment {
-    variables: im::HashMap<String, Value>,
+    variables: im::HashMap<CompactString, Value>,
 }
 
 impl Environment {
@@ -23,9 +24,9 @@ impl Environment {
         }
     }
 
-    pub fn with_variable(&self, name: impl Into<String>, value: Value) -> Environment {
+    pub fn with_variable(&self, name: CompactString, value: Value) -> Environment {
         Self {
-            variables: self.variables.update(name.into(), value),
+            variables: self.variables.update(name, value),
         }
     }
 }
@@ -81,7 +82,7 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
         },
         Expr::Let(name, expr1, expr2) => {
             let v = eval_expr(env, expr1)?;
-            let new_env = env.with_variable(name, v);
+            let new_env = env.with_variable(name.to_owned(), v);
             eval_expr(&new_env, expr2)
         }
     }
@@ -113,7 +114,7 @@ fn op_mul(l: Value, r: Value) -> Result<Value, EvalError> {
             Ok(Value::Number(l * r)),
         (Value::String(l), Value::Number(r)) => {
             let res = (*l).clone().repeat(r as usize);
-            Ok(Value::String(Arc::new(res)))
+            Ok(Value::String(Arc::new(res.into())))
         }
         _ => Err(EvalError::BadOperandType),
     }

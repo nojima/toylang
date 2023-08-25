@@ -1,3 +1,4 @@
+use compact_str::CompactString;
 use crate::ast::{Stmt, Expr, UnaryOp, BinaryOp};
 use crate::token::Token;
 use crate::lexer::LexicalError;
@@ -46,10 +47,10 @@ Expr0: Expr = {
 Number: f64 =
     "number literal";
 
-String: String =
+String: CompactString =
     "string literal";
 
-Identifier: String =
+Identifier: CompactString =
     "identifier";
 
 extern {
@@ -70,7 +71,7 @@ extern {
         "in" => Token::In,
 
         "number literal" => Token::Number(<f64>),
-        "string literal" => Token::String(<String>),
-        "identifier" => Token::Identifier(<String>),
+        "string literal" => Token::String(<CompactString>),
+        "identifier" => Token::Identifier(<CompactString>),
     }
 }

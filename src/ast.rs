@@ -1,4 +1,5 @@
 use std::fmt::{self, Debug, Formatter};
+use compact_str::CompactString;
 
 #[derive(Clone)]
 pub enum Stmt {
@@ -16,11 +17,11 @@ impl Debug for Stmt {
 #[derive(Clone)]
 pub enum Expr {
     Number(f64),
-    String(String),
+    String(CompactString),
     UnaryOp(UnaryOp, Box<Expr>),
     BinaryOp(BinaryOp, Box<Expr>, Box<Expr>),
-    Variable(String),
-    Let(String, Box<Expr>, Box<Expr>),
+    Variable(CompactString),
+    Let(CompactString, Box<Expr>, Box<Expr>),
 }
 
 impl Debug for Expr {
