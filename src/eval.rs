@@ -46,17 +46,13 @@ pub fn eval(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             }
         }
         Expr::BinaryOp(op, lhs, rhs) => {
-            let Value::Number(l) = eval(env, lhs)? else {
-                return Err(EvalError::BadOperandType);
-            };
-            let Value::Number(r) = eval(env, rhs)? else {
-                return Err(EvalError::BadOperandType);
-            };
+            let l = eval(env, lhs)?;
+            let r = eval(env, rhs)?;
             match op {
-                BinaryOp::Add => Ok(Value::Number(l + r)),
-                BinaryOp::Sub => Ok(Value::Number(l - r)),
-                BinaryOp::Mul => Ok(Value::Number(l * r)),
-                BinaryOp::Div => Ok(Value::Number(l / r)),
+                BinaryOp::Add => op_add(l, r),
+                BinaryOp::Sub => op_sub(l, r),
+                BinaryOp::Mul => op_mul(l, r),
+                BinaryOp::Div => op_div(l, r),
             }
         }
         Expr::Variable(name) => match env.variables.get(name) {
@@ -68,5 +64,45 @@ pub fn eval(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             let new_env = env.with_variable(name, v);
             eval(&new_env, expr2)
         }
+    }
+}
+
+fn op_add(l: Value, r: Value) -> Result<Value, EvalError> {
+    match (l, r) {
+        (Value::Number(l), Value::Number(r)) =>
+            Ok(Value::Number(l + r)),
+        (Value::String(l), Value::String(r)) => {
+            let res = (*l).clone() + &r;
+            Ok(Value::String(Arc::new(res)))
+        }
+        _ => Err(EvalError::BadOperandType),
+    }
+}
+
+fn op_sub(l: Value, r: Value) -> Result<Value, EvalError> {
+    match (l, r) {
+        (Value::Number(l), Value::Number(r)) =>
+            Ok(Value::Number(l - r)),
+        _ => Err(EvalError::BadOperandType),
+    }
+}
+
+fn op_mul(l: Value, r: Value) -> Result<Value, EvalError> {
+    match (l, r) {
+        (Value::Number(l), Value::Number(r)) =>
+            Ok(Value::Number(l * r)),
+        (Value::String(l), Value::Number(r)) => {
+            let res = (*l).clone().repeat(r as usize);
+            Ok(Value::String(Arc::new(res)))
+        }
+        _ => Err(EvalError::BadOperandType),
+    }
+}
+
+fn op_div(l: Value, r: Value) -> Result<Value, EvalError> {
+    match (l, r) {
+        (Value::Number(l), Value::Number(r)) =>
+            Ok(Value::Number(l / r)),
+        _ => Err(EvalError::BadOperandType),
     }
 }
