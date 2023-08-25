@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use compact_str::CompactString;
+use std::sync::Arc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {

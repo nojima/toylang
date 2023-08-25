@@ -1,5 +1,5 @@
-use std::fmt::{self, Debug, Formatter};
 use compact_str::CompactString;
+use std::fmt::{self, Debug, Formatter};
 
 #[derive(Clone)]
 pub enum Stmt {

@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, UnaryOp, Stmt};
+use crate::ast::{BinaryOp, Expr, Stmt, UnaryOp};
 use crate::value::Value;
 use compact_str::CompactString;
 use std::sync::Arc;
@@ -90,8 +90,7 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
 
 fn op_add(l: Value, r: Value) -> Result<Value, EvalError> {
     match (l, r) {
-        (Value::Number(l), Value::Number(r)) =>
-            Ok(Value::Number(l + r)),
+        (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l + r)),
         (Value::String(l), Value::String(r)) => {
             let res = (*l).clone() + &r;
             Ok(Value::String(Arc::new(res)))
@@ -102,16 +101,14 @@ fn op_add(l: Value, r: Value) -> Result<Value, EvalError> {
 
 fn op_sub(l: Value, r: Value) -> Result<Value, EvalError> {
     match (l, r) {
-        (Value::Number(l), Value::Number(r)) =>
-            Ok(Value::Number(l - r)),
+        (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l - r)),
         _ => Err(EvalError::BadOperandType),
     }
 }
 
 fn op_mul(l: Value, r: Value) -> Result<Value, EvalError> {
     match (l, r) {
-        (Value::Number(l), Value::Number(r)) =>
-            Ok(Value::Number(l * r)),
+        (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l * r)),
         (Value::String(l), Value::Number(r)) => {
             let res = (*l).clone().repeat(r as usize);
             Ok(Value::String(Arc::new(res.into())))
@@ -122,8 +119,7 @@ fn op_mul(l: Value, r: Value) -> Result<Value, EvalError> {
 
 fn op_div(l: Value, r: Value) -> Result<Value, EvalError> {
     match (l, r) {
-        (Value::Number(l), Value::Number(r)) =>
-            Ok(Value::Number(l / r)),
+        (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l / r)),
         _ => Err(EvalError::BadOperandType),
     }
 }
