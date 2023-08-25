@@ -6,10 +6,7 @@ mod value;
 
 use clap::Parser;
 use lalrpop_util::lalrpop_mod;
-use std::{
-    io::{self, Write},
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 lalrpop_mod!(pub syntax);
 
@@ -38,21 +35,12 @@ fn execute_file(filename: &Path) -> anyhow::Result<()> {
 }
 
 fn repl() -> anyhow::Result<()> {
-    let mut buffer = String::new();
-    let stdin = io::stdin();
+    let mut rl = rustyline::DefaultEditor::new()?;
     let mut env = eval::Environment::new();
-
     loop {
-        print!("program> ");
-        io::stdout().flush()?;
+        let line = rl.readline(">> ")?;
 
-        buffer.clear();
-        let n = stdin.read_line(&mut buffer)?;
-        if n == 0 {
-            return Ok(());
-        }
-
-        let lexer = lexer::Lexer::new(&buffer);
+        let lexer = lexer::Lexer::new(&line);
         let parser = syntax::ProgramParser::new();
         let node = match parser.parse(lexer) {
             Ok(node) => node,
