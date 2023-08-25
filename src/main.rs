@@ -35,24 +35,24 @@ fn main() -> io::Result<()> {
         };
 
         let env = eval::Environment::new();
-        let value = match eval::eval(&env, &expr) {
-            Ok(value) => value,
+        let values = match eval::eval_program(&env, &expr) {
+            Ok(values) => values,
             Err(e) => {
                 println!("EvalError: {e}");
                 println!();
                 continue;
             }
         };
-        println!("=> {value:?}");
+        println!("=> {values:?}");
         println!();
     }
 }
 
 #[test]
-fn parse_test() {
+fn parse_expr() {
     let verify = |source: &str, expected: &str| {
         let lexer = lexer::Lexer::new(source);
-        let parser = syntax::ProgramParser::new();
+        let parser = syntax::ExprParser::new();
         let maybe_ast = parser.parse(lexer);
         let actual = maybe_ast.map(|ast| format!("{:?}", ast));
         assert_eq!(actual, Ok(expected.to_owned()));

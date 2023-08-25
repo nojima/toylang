@@ -1,13 +1,16 @@
-use crate::ast::{Expr, UnaryOp, BinaryOp};
+use crate::ast::{Stmt, Expr, UnaryOp, BinaryOp};
 use crate::token::Token;
 use crate::lexer::LexicalError;
 
 grammar;
 
-pub Program: Expr =
-    Expr;
+pub Program: Vec<Stmt> =
+    Stmt+;
 
-Expr: Expr = {
+Stmt: Stmt =
+    <Expr> ";" => Stmt::Expr(<>);
+
+pub Expr: Expr = {
     Expr3,
     LetExpr,
 }

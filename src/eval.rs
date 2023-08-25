@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, UnaryOp};
+use crate::ast::{BinaryOp, Expr, UnaryOp, Stmt};
 use crate::value::Value;
 use std::sync::Arc;
 
@@ -30,12 +30,32 @@ impl Environment {
     }
 }
 
-pub fn eval(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
+pub fn eval_program(env: &Environment, program: &[Stmt]) -> Result<Vec<Value>, EvalError> {
+    let mut env = env.clone();
+    let mut values = Vec::new();
+    for stmt in program {
+        let (value, new_env) = eval_stmt(&env, stmt)?;
+        values.push(value);
+        env = new_env;
+    }
+    Ok(values)
+}
+
+pub fn eval_stmt(env: &Environment, stmt: &Stmt) -> Result<(Value, Environment), EvalError> {
+    match stmt {
+        Stmt::Expr(expr) => {
+            let value = eval_expr(env, &expr)?;
+            Ok((value, env.clone()))
+        }
+    }
+}
+
+pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
     match expr {
         Expr::Number(n) => Ok(Value::Number(*n)),
         Expr::String(s) => Ok(Value::String(Arc::new(s.clone()))),
         Expr::UnaryOp(op, expr) => {
-            let v = eval(env, expr)?;
+            let v = eval_expr(env, expr)?;
             match op {
                 UnaryOp::Neg => {
                     let Value::Number(n) = v else {
@@ -46,8 +66,8 @@ pub fn eval(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             }
         }
         Expr::BinaryOp(op, lhs, rhs) => {
-            let l = eval(env, lhs)?;
-            let r = eval(env, rhs)?;
+            let l = eval_expr(env, lhs)?;
+            let r = eval_expr(env, rhs)?;
             match op {
                 BinaryOp::Add => op_add(l, r),
                 BinaryOp::Sub => op_sub(l, r),
@@ -60,9 +80,9 @@ pub fn eval(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             None => Err(EvalError::UndefinedVariable(name.to_owned())),
         },
         Expr::Let(name, expr1, expr2) => {
-            let v = eval(env, expr1)?;
+            let v = eval_expr(env, expr1)?;
             let new_env = env.with_variable(name, v);
-            eval(&new_env, expr2)
+            eval_expr(&new_env, expr2)
         }
     }
 }

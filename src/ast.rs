@@ -1,6 +1,19 @@
 use std::fmt::{self, Debug, Formatter};
 
 #[derive(Clone)]
+pub enum Stmt {
+    Expr(Expr),
+}
+
+impl Debug for Stmt {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            Stmt::Expr(expr) => writeln!(f, "{expr:?};"),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub enum Expr {
     Number(f64),
     String(String),
