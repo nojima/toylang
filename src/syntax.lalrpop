@@ -20,7 +20,13 @@ CommaSeparated<T>: Vec<T> = {
 //--------------------------------------------------------
 
 pub Program: Vec<Stmt> =
-    Stmt+;
+    <mut stmts:Stmt*> <expr:Expr?> => match expr {
+        None => stmts,
+        Some(expr) => {
+            stmts.push(Stmt::Expr(expr));
+            stmts
+        }
+    };
 
 Stmt: Stmt = {
     <Expr> ";" => Stmt::Expr(<>),
