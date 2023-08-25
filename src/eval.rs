@@ -10,6 +10,12 @@ pub enum EvalError {
 
     #[error("bad operand type")]
     BadOperandType,
+
+    #[error("uncallable object")]
+    UncallableObject,
+
+    #[error("wrong number of arguments")]
+    WrongNumberOfArguments,
 }
 
 #[derive(Debug, Clone)]
@@ -48,8 +54,8 @@ pub fn eval_stmt(env: &Environment, stmt: &Stmt) -> Result<(Value, Environment),
             let value = eval_expr(env, &expr)?;
             Ok((value, env.clone()))
         }
-        Stmt::Def(name, args, body) => {
-            let func = Value::Function(name.clone(), args.clone(), Box::new(body.clone()));
+        Stmt::Def(name, params, body) => {
+            let func = Value::Function(name.clone(), params.clone(), Box::new(body.clone()));
             let new_env = env.with_variable(name.clone(), func);
             Ok((Value::Unit, new_env))
         }
@@ -90,6 +96,7 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             let new_env = env.with_variable(name.to_owned(), v);
             eval_expr(&new_env, expr2)
         }
+        Expr::Apply(func, args) => eval_apply(env, func, args),
     }
 }
 
@@ -127,4 +134,19 @@ fn op_div(l: Value, r: Value) -> Result<Value, EvalError> {
         (Value::Number(l), Value::Number(r)) => Ok(Value::Number(l / r)),
         _ => Err(EvalError::BadOperandType),
     }
+}
+
+fn eval_apply(env: &Environment, func: &Expr, args: &[Expr]) -> Result<Value, EvalError> {
+    let Value::Function(_name, params, body) = eval_expr(env, func)? else {
+        return Err(EvalError::UncallableObject);
+    };
+    if args.len() != params.len() {
+        return Err(EvalError::WrongNumberOfArguments);
+    }
+    let mut new_env = env.clone();
+    for (param, arg) in params.into_iter().zip(args) {
+        let value = eval_expr(env, arg)?;
+        new_env = new_env.with_variable(param, value);
+    }
+    eval_expr(&new_env, &body)
 }

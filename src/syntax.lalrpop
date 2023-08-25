@@ -24,12 +24,15 @@ pub Program: Vec<Stmt> =
 
 Stmt: Stmt = {
     <Expr> ";" => Stmt::Expr(<>),
-    "def" <name:Identifier> "(" <args:CommaSeparated<Identifier>> ")" "=" <body:Expr> ";"
-        => Stmt::Def(name, args, body),
+    DefStmt,
 };
 
+DefStmt: Stmt =
+    "def" <name:Identifier> "(" <params:CommaSeparated<Identifier>> ")" "=" <body:Expr> ";"
+        => Stmt::Def(name, params, body);
+
 pub Expr: Expr = {
-    Expr3,
+    Expr4,
     LetExpr,
 }
 
@@ -37,22 +40,31 @@ LetExpr: Expr =
     "let" <name:Identifier> "=" <expr1:Expr> "in" <expr2:Expr>
         => Expr::Let(name, Box::new(expr1), Box::new(expr2));
 
+Expr4: Expr = {
+    Expr3,
+    <lhs:Expr4> "+" <rhs:Expr3> => Expr::BinaryOp(BinaryOp::Add, Box::new(lhs), Box::new(rhs)),
+    <lhs:Expr4> "-" <rhs:Expr3> => Expr::BinaryOp(BinaryOp::Sub, Box::new(lhs), Box::new(rhs)),
+};
+
 Expr3: Expr = {
     Expr2,
-    <lhs:Expr3> "+" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Add, Box::new(lhs), Box::new(rhs)),
-    <lhs:Expr3> "-" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Sub, Box::new(lhs), Box::new(rhs)),
+    <lhs:Expr3> "*" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Mul, Box::new(lhs), Box::new(rhs)),
+    <lhs:Expr3> "/" <rhs:Expr2> => Expr::BinaryOp(BinaryOp::Div, Box::new(lhs), Box::new(rhs)),
 };
 
 Expr2: Expr = {
     Expr1,
-    <lhs:Expr2> "*" <rhs:Expr1> => Expr::BinaryOp(BinaryOp::Mul, Box::new(lhs), Box::new(rhs)),
-    <lhs:Expr2> "/" <rhs:Expr1> => Expr::BinaryOp(BinaryOp::Div, Box::new(lhs), Box::new(rhs)),
-};
+    "-" <Expr1> => Expr::UnaryOp(UnaryOp::Neg, Box::new(<>)),
+}
 
 Expr1: Expr = {
     Expr0,
-    "-" <Expr0> => Expr::UnaryOp(UnaryOp::Neg, Box::new(<>)),
+    FunctionApplication,
 }
+
+FunctionApplication: Expr =
+    <func:Expr0> "(" <args:CommaSeparated<Expr>> ")"
+        => Expr::Apply(Box::new(func), args);
 
 Expr0: Expr = {
     Number     => Expr::Number(<>),
