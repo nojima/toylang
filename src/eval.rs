@@ -37,15 +37,18 @@ impl Environment {
     }
 }
 
-pub fn eval_program(env: &Environment, program: &[Stmt]) -> Result<Vec<Value>, EvalError> {
+pub fn eval_program(
+    env: &Environment,
+    program: &[Stmt],
+) -> Result<(Value, Environment), EvalError> {
+    let mut last_value = Value::Unit;
     let mut env = env.clone();
-    let mut values = Vec::new();
     for stmt in program {
         let (value, new_env) = eval_stmt(&env, stmt)?;
-        values.push(value);
+        last_value = value;
         env = new_env;
     }
-    Ok(values)
+    Ok((last_value, env))
 }
 
 pub fn eval_stmt(env: &Environment, stmt: &Stmt) -> Result<(Value, Environment), EvalError> {

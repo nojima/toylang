@@ -12,9 +12,10 @@ lalrpop_mod!(pub syntax);
 fn main() -> io::Result<()> {
     let mut buffer = String::new();
     let stdin = io::stdin();
+    let mut env = eval::Environment::new();
 
     loop {
-        print!("expr> ");
+        print!("program> ");
         io::stdout().flush()?;
 
         buffer.clear();
@@ -34,16 +35,16 @@ fn main() -> io::Result<()> {
             }
         };
 
-        let env = eval::Environment::new();
-        let values = match eval::eval_program(&env, &expr) {
-            Ok(values) => values,
+        let (value, new_env) = match eval::eval_program(&env, &expr) {
+            Ok(value) => value,
             Err(e) => {
                 println!("EvalError: {e}");
                 println!();
                 continue;
             }
         };
-        println!("=> {values:?}");
+        env = new_env;
+        println!("=> {value:?}");
         println!();
     }
 }
