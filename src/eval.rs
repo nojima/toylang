@@ -62,6 +62,11 @@ pub fn eval_stmt(env: &Environment, stmt: &Stmt) -> Result<(Value, Environment),
             let new_env = env.with_variable(name.clone(), func);
             Ok((Value::Unit, new_env))
         }
+        Stmt::Let(name, expr) => {
+            let value = eval_expr(env, &expr)?;
+            let new_env = env.with_variable(name.clone(), value);
+            Ok((Value::Unit, new_env))
+        }
     }
 }
 
@@ -94,11 +99,6 @@ pub fn eval_expr(env: &Environment, expr: &Expr) -> Result<Value, EvalError> {
             Some(v) => Ok(v.clone()),
             None => Err(EvalError::UndefinedVariable(name.to_owned())),
         },
-        Expr::Let(name, expr1, expr2) => {
-            let v = eval_expr(env, expr1)?;
-            let new_env = env.with_variable(name.to_owned(), v);
-            eval_expr(&new_env, expr2)
-        }
         Expr::Apply(func, args) => eval_apply(env, func, args),
     }
 }

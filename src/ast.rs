@@ -5,6 +5,7 @@ use std::fmt::{self, Debug, Formatter};
 pub enum Stmt {
     Expr(Expr),
     Def(CompactString, Vec<CompactString>, Expr),
+    Let(CompactString, Expr),
 }
 
 impl Debug for Stmt {
@@ -24,6 +25,7 @@ impl Debug for Stmt {
                 }
                 writeln!(f, ") = {body:?}")
             }
+            Stmt::Let(name, expr) => writeln!(f, "{name} = {expr:?};"),
         }
     }
 }
@@ -35,7 +37,6 @@ pub enum Expr {
     UnaryOp(UnaryOp, Box<Expr>),
     BinaryOp(BinaryOp, Box<Expr>, Box<Expr>),
     Variable(CompactString),
-    Let(CompactString, Box<Expr>, Box<Expr>),
     Apply(Box<Expr>, Vec<Expr>),
 }
 
@@ -47,7 +48,6 @@ impl Debug for Expr {
             Expr::UnaryOp(op, expr) => write!(f, "{op:?}{expr:?}"),
             Expr::BinaryOp(op, lhs, rhs) => write!(f, "({lhs:?} {op:?} {rhs:?})"),
             Expr::Variable(ref name) => write!(f, "{name}"),
-            Expr::Let(name, expr1, expr2) => write!(f, "(let {name} = {expr1:?} in {expr2:?})"),
             Expr::Apply(func, args) => write!(f, "{func:?}{args:?}"),
         }
     }

@@ -25,20 +25,19 @@ pub Program: Vec<Stmt> =
 Stmt: Stmt = {
     <Expr> ";" => Stmt::Expr(<>),
     DefStmt,
+    LetStmt,
 };
 
 DefStmt: Stmt =
     "def" <name:Identifier> "(" <params:CommaSeparated<Identifier>> ")" "=" <body:Expr> ";"
         => Stmt::Def(name, params, body);
 
-pub Expr: Expr = {
-    Expr4,
-    LetExpr,
-}
+LetStmt: Stmt =
+    "let" <name:Identifier> "=" <expr:Expr> ";"
+        => Stmt::Let(name, expr);
 
-LetExpr: Expr =
-    "let" <name:Identifier> "=" <expr1:Expr> "in" <expr2:Expr>
-        => Expr::Let(name, Box::new(expr1), Box::new(expr2));
+pub Expr: Expr =
+    Expr4;
 
 Expr4: Expr = {
     Expr3,
